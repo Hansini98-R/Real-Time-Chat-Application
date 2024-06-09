@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', () => {
+            var socket = io.connect('http://' + document.domain + ':' + location.port);
+            var room = "default";
+            var username = "{{ username }}";
+
+            socket.on('connect', () => {
+                socket.emit('join', {'username': username, 'room': room});
+            });
+
+            socket.on('message', data => {
+                var messages = document.getElementById('messages');
+                messages.innerHTML += '<p>' + data + '</p>';
+            });
+
+            document.getElementById('send').onclick = () => {
+                var message = document.getElementById('message').value;
+                socket.emit('message', {'username': username, 'message': message, 'room': room});
+                document.getElementById('message').value = '';
+            };
+
+            document.getElementById('leave').onclick = () => {
+                socket.emit('leave', {'username': username, 'room': room});
+                window.location.href = '/logout';
+            };
+        });
+    </script>
+</head>
+<body>
+    <h2>Chat Room</h2>
+    <div id="messages"></div>
+    <input type="text" id="message">
+    <button id="send">Send</button>
+    <button id="leave">Leave</button>
+</body>
+</html>
